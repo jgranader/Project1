@@ -5,55 +5,156 @@ from datetime import date
 
 
 def getData(file):
-# get a list of dictionary objects from the file
+	filenew = open(file, "r")
+	topline = filenew.readline()
+	datalines = filenew.readlines()
+	settopline = topline.split(",")
+	info_list = []
+	
+	for line in datalines[0:]:
+		newdict = {}
+		values = line.split(',')
+		
+		newdict[settopline[0]] = values[0] #first name
+		newdict[settopline[1]] = values[1] #last name
+		newdict[settopline[2]] = values[2] #email
+		newdict[settopline[3]] = values[3] #Class
+		newdict[settopline[4]] = values[4] #date of birth
+		
+		if newdict not in info_list:
+			info_list.append(newdict)	
+	filenew.close()	
+	return info_list
+	
+#get a list of dictionary objects from the file
 #Input: file name
 #Ouput: return a list of dictionary objects where
 #the keys are from the first row in the data. and the values are each of the other rows
 
-	pass
+def mySort(data ,col):
+	sortedlist = sorted(data, key=lambda i:i[col])
+	names = []
+	for name in sortedlist:
+		first = name["First"]
+		last = name["Last"]
+		names.append(first + " " + last)
 
-def mySort(data,col):
+	return names[0]
+	
 # Sort based on key/column
 #Input: list of dictionaries and col (key) to sort on
 #Output: Return the first item in the sorted list as a string of just: firstName lastName
 
-	pass
-
 
 def classSizes(data):
+	#setting counter
+	freshman = 0
+	sophomore = 0 
+	junior = 0
+	senior = 0 
+	
+	for student in data:
+		classinfo = student["Class"]
+		if classinfo == "Freshman":
+			freshman += 1
+		elif classinfo == "Sophomore":
+			sophomore += 1
+		elif classinfo == "Junior":
+			junior += 1
+		elif classinfo == "Senior":
+			senior += 1
+	#adding values to a list
+	histogram = []
+	histogram.append(("Freshman", freshman))
+	histogram.append(("Sophomore", sophomore))
+	histogram.append(("Junior", junior))
+	histogram.append(("Senior", senior))
+	#creating a tuple
+
+	#sorting the list of tuples
+	histogram.sort(key=lambda x: x[1], reverse = True)
+	return histogram
+
 # Create a histogram
 # Input: list of dictionaries
 # Output: Return a list of tuples sorted by the number of students in that class in
 # descending order
 # [('Senior', 26), ('Junior', 25), ('Freshman', 21), ('Sophomore', 18)]
 
-	pass
-
 
 def findMonth(a):
-# Find the most common birth month form this data
+	months = {}
+	for entry in a:
+		dates = entry["DOB\n"].split("/")
+		x = int(dates[0])
+		if x in months:
+			months[x] = months[x] + 1
+		else:
+			months[x] = 1
+
+	sorted_months = sorted(months.items(), key=lambda t: t[1], reverse=True)
+	print (sorted_months)
+	return(sorted_months[0][0])
+	
+
+#need to seperate the dob into month, day, and year and then index in a for loop to find the most common month
+# Find the most common birth month from this data
 # Input: list of dictionaries
 # Output: Return the month (1-12) that had the most births in the data
 
-	pass
 
 def mySortPrint(a,col,fileName):
+	output = open(str(fileName), "w")
+	sortedlist = sorted(a, key = lambda i: i[col])
+	for student in sortedlist:
+		first = student["First"]
+		last = student["Last"]
+		email = student["Email"]
+		output.write(first + "," + last + "," + email + '\n')
+	print(output)
+	output.close()
+
 #Similar to mySort, but instead of returning single
 #Student, the sorted data is saved to a csv file.
 # as fist,last,email
 #Input: list of dictionaries, col (key) to sort by and output file name
 #Output: No return value, but the file is written
 
-	pass
 
 def findAge(a):
-# def findAge(a):
+	age_count = 0
+	age_list = []
+	current = date.today()
+	students = 0 
+
+	for entry in a:
+		students += 1
+		dates = entry["DOB\n"].split("/")
+		years = int(dates[2])
+
+		if len(str(years)) <= 2:
+			if years >= 18:
+				years += 1900
+			else:
+				years += 2000
+		age = (current.year - years)
+		age_list.append(age)
+		age_count += age
+
+	average_age = int(age_count/students)
+	
+	print(age_count)
+	print(students)
+	print(age_list)
+	return(average_age)
+
+	pass
+
 # Input: list of dictionaries
 # Output: Return the average age of the students and round that age to the nearest
 # integer.  You will need to work with the DOB and the current date to find the current
 # age in years.
 
-	pass
 
 
 ################################################################
@@ -62,14 +163,14 @@ def findAge(a):
 
 ## We have provided simple test() function used in main() to print what each function returns vs. what it's supposed to return.
 def test(got, expected, pts):
-  score = 0;
-  if got == expected:
-    score = pts
-    print(" OK ", end=" ")
-  else:
-    print (" XX ", end=" ")
-  print("Got: ",got, "Expected: ",expected)
-  return score
+	score = 0;
+	if got == expected:
+		score = pts
+		print(" OK ", end=" ")
+	else:
+		print (" XX ", end=" ")
+	print("Got: ",got, "Expected: ",expected)
+	return score
 
 
 # Provided main() calls the above functions with interesting inputs, using test() to check if each result is correct or not.
@@ -77,7 +178,8 @@ def main():
 	total = 0
 	print("Read in Test data and store as a list of dictionaries")
 	data = getData('P1DataA.csv')
-	data2 = getData('P1DataB.csv')
+	data2 = getData('P1DataB2.csv')
+	
 	total += test(type(data),type([]),50)
 
 	print()
@@ -111,6 +213,7 @@ def main():
 	total += test(findAge(data2), 42, 5)
 
 	print("Your final score is " + str(total))
+	
 
 # Standard boilerplate to call the main() function that tests all your code
 if __name__ == '__main__':
